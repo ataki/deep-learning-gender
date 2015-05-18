@@ -1,60 +1,58 @@
-import sqlite3
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import sessionmaker
 
-# Setup
+import sys
 
-def mkdir_p(directory):
-    try:
-        os.mkdir(directory)
-    except OSError, e:
-        if e.errno != errno.EEXIST:
-            raise e
-        pass
+engine = None
+session = None
+Base = declarative_base()
 
-mkdir_p("./sql")
+def init(dbpath):
+	global engine
+	engine = create_engine('sqlite:///' + dbpath, echo=True)
 
-conn = sqlite3.connect("")
+def get_session():
+	global session, engine
+	if engine is None:
+		print "Engine missing!!! Aborting"
+		sys.exit(1)
 
-# Utility functions
+	if session is None:
+		S = sessionmaker(bind=engine)
+		session = S()
 
-def _convert_elem(elem):
-    t = type(elem)
-    if t == str:
-        return "'" + elem + "'"
-    elif t == int:
-        return str(elem)
-    else:
-        return "'" + str(elem) + "'"
+	return session
 
-def query_from_file(name):
-    f = open(os.path.join(".", "sql", name))
-    return f.read().strip()
+### Auto-Init on Import
 
-def create_tables():
-    cursor = conn.cursor()
-    res1 = cursor.execute(query_from_file("create-tumblr-oauth.sql"))
-    res2 = cursor.execute(query_from_file("create-tumblr-posts.sql"))
-    res3 = cursor.execute(query_from_file("create-medium-posts.sql"))
-    return res1 | res2 | res3
+init("db/db.sqlite")
 
-def insert(tablename, rows=[]):
-    values = []
-    for row in rows:
-        elems_as_str = [_convert_elem(elem) for elem in row]
-        row_as_str = "(" + ",".join(elems_as_str)  + ")"
-        values.append(row_as_str)
-    values_as_str = ",\n".join(values)
-    sql = "insert into %s values %s" % (tablename, values_as_str)
-    return cursor.execute(sql)
+### Models
 
-def find(query, is_file=False):
-    if is_file:
-        filename = query
-        return cursor.execute(query_from_file(filename))
-    else:
-        return cursor.execute(query)
+class TumblrPost(Base):
+	__tablename__ = 'tumblr_oauth'
 
-def unwrap(result):
-    return result[0]
+	id = Column(Integer, primary_key=True)
+	post = Column(String)
+	blogname = Column(String)
+	post_id = Column(String)
+	timestamp = Column(String)
+	# Male => 1, Female => -1
+	author_gender = Column(Integer, default=0)
 
-def unwrap_one(result):
-    return result[0][0]
+class TwitterPost(Base):
+	__tablename__ = 'post'
+
+	id = Column(Integer, primary_key=True)
+	post = Column(String)
+	username = Column(String)
+	profile_image_url = Column(String)
+	timestamp = Column(String)
+	# Male => 1, Female => -1
+	author_gender = Column(Integer, default=0)
+
+### Create all
+
+Base.metadata.create_all(engine)
