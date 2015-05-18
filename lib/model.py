@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
 
 import sys
 
@@ -25,6 +26,14 @@ def get_session():
 
 	return session
 
+def get_connection():
+	global engine
+	if engine is None:
+		print "Engine missing!!! Aborting"
+		sys.exit(1)
+
+	return engine.connect()
+
 ### Auto-Init on Import
 
 init("db/db.sqlite")
@@ -39,7 +48,6 @@ class TumblrPost(Base):
 	blogname = Column(String)
 	post_id = Column(String)
 	timestamp = Column(String)
-	# Male => 1, Female => -1
 	author_gender = Column(Integer, default=0)
 
 class TwitterPost(Base):
@@ -50,8 +58,26 @@ class TwitterPost(Base):
 	username = Column(String)
 	profile_image_url = Column(String)
 	timestamp = Column(String)
-	# Male => 1, Female => -1
 	author_gender = Column(Integer, default=0)
+
+class TaskCompletion(Base):
+	__tablename__ = 'task_completion'
+
+	id = Column(Integer, primary_key=True)
+	src = Column(String)
+	timestamp = Column(String)
+
+	@classmethod
+	def last_updated(type):
+		conn = get_connection()
+		query = text("select max(timestamp) from task_completion where type=:type")
+		results = conn.execute(query, type=type).fetchall()
+
+		try:
+			first_row = results[0]
+			return datetime.fromtimestamp(int(first_row[0]))
+		except:
+			return None
 
 ### Create all
 

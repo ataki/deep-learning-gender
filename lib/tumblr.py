@@ -32,4 +32,10 @@ class Client(obj):
         blogname = result['blog_name']
         post_id = result['id']
         timestamp = result['date']
-        return (post, blogname, post_id, gender, timestamp)
+        return {
+            'post': post, 
+            'blogname': blogname, 
+            'post_id': post_id, 
+            'gender': gender, 
+            'timestamp': timestamp
+        }

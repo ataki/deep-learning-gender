@@ -18,7 +18,9 @@ class Client(boj):
 		    sys.exit(1)
 
 	def get_posts(self, since="2010-01-01"):
-		terms = ['fashion', 'action', 'movies', 'apple', 'stock', 'obama', 'campaign', 'warcraft', 'starcraft', 'loreal']		
+		terms = ['fashion', 'action', 'movies', 'apple', 
+			'stock', 'obama', 'campaign', 'warcraft', 
+			'starcraft', 'loreal', 'diy']		
 
 		accum = []
 		for term in terms:
@@ -37,4 +39,9 @@ class Client(boj):
 		username = result['user']['name']
 		profile_image_url = result['user']['profile_image_url']
 		timestamp = result['created_at']
-		return (post, username, profile_image_url, timestamp)
+		return {
+			'post': post, 
+			'username': username, 
+			'profile_image_url': profile_image_url, 
+			'timestamp': timestamp
+		}	
