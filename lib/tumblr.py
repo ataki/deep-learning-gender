@@ -1,11 +1,13 @@
 import pytumblr
 import model
+import tokenizer
+import os
 
 ENV = os.environ
 
 ### Wrap api into common module
 
-class Client(obj):
+class Client(object):
     def __init__(self):
         self.client = pytumblr.TumblrRestClient(
             ENV['TUMBLR_CONSUMER_KEY'],
@@ -33,9 +35,9 @@ class Client(obj):
         post_id = result['id']
         timestamp = result['date']
         return {
-            'post': post, 
-            'blogname': blogname, 
-            'post_id': post_id, 
-            'gender': gender, 
+            'post': " ".join(tokenize(post)),
+            'blogname': blogname,
+            'post_id': post_id,
+            'gender': gender,
             'timestamp': timestamp
         }

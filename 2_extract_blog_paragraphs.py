@@ -12,12 +12,18 @@ import os
 import errno
 import shutil
 import codecs
+from lib import model
 
 # max length of numerically iterated file name
 # e.g.
 #   4 => "0001.txt", "0002.txt", ...
 #   5 => "00001.txt", "00002.txt", ...
 MAX_FILENAME_LEN = 4
+
+DATA_DIR = "./data"
+
+def get_data_path(dirname):
+    return os.path.join(DATA_DIR, dirname)
 
 # Equivalent to mkdir -p
 def mkdir_p(directory):
@@ -68,18 +74,18 @@ def generate_filename(counter):
 # Make directories
 
 print "Making directories if not exists..."
-rm_rf("./pos")
-rm_rf("./neg")
-rm_rf("./unlabeled")
-mkdir_p("./pos")
-mkdir_p("./neg")
-mkdir_p("./unlabeled")
+rm_rf(os.path.join("./data/pos"))
+rm_rf(get_data_path("neg"))
+rm_rf(get_data_path("unlabeled"))
+mkdir_p(get_data_path("pos"))
+mkdir_p(get_data_path("neg"))
+mkdir_p(get_data_path("unlabeled"))
 print "Done"
 
 #############
 # Output blog posts to directories
 
-SOURCE = "./training.csv"
+SOURCE = get_data_path("blog/training.csv")
 
 with open(SOURCE, "r") as fin:
 
@@ -103,7 +109,7 @@ with open(SOURCE, "r") as fin:
             phrases = extract_phrases(doc)
             for phrase in phrases:
                 incr_filename = generate_filename(p_counter)
-                success = write_to_file("./pos/" + incr_filename, phrase)
+                success = write_to_file(get_data_path("pos") + incr_filename, phrase)
                 p_counter += 1
 
         elif label == 0:
@@ -111,7 +117,7 @@ with open(SOURCE, "r") as fin:
             phrases = extract_phrases(doc)
             for phrase in phrases:
                 incr_filename = generate_filename(n_counter)
-                success = write_to_file("./neg/" + incr_filename, phrase)
+                success = write_to_file(get_data_path("neg") + "/" + incr_filename, phrase)
                 n_counter += 1
 
         else:
@@ -120,7 +126,7 @@ with open(SOURCE, "r") as fin:
             phrases = extract_phrases(doc)
             for phrase in phrases:
                 incr_filename = generate_filename(u_counter)
-                success = write_to_file("./unlabeled/" + incr_filename, phrase)
+                success = write_to_file(get_data_path("unlabeled") + "/" + incr_filename, phrase)
                 u_counter += 1
 
     print "lines: ", str(line_counter)

@@ -39,6 +39,9 @@ def get_connection():
 init("db/db.sqlite")
 
 ### Models
+# for author_genders, default 0 => unclassified
+# 	1 => male
+# 	-1 => female
 
 class TumblrPost(Base):
 	__tablename__ = 'tumblr_oauth'
@@ -58,6 +61,17 @@ class TwitterPost(Base):
 	username = Column(String)
 	profile_image_url = Column(String)
 	timestamp = Column(String)
+	author_gender = Column(Integer, default=0)
+
+class Book(Base):
+	__tablename__ = 'book'
+
+	id = Column(Integer, primary_key=True)
+	author = Column(String)
+	title = Column(String)
+	e_id = Column(Integer)
+	century = Column(Integer)
+	text_file_path = Column(String)	
 	author_gender = Column(Integer, default=0)
 
 class TaskCompletion(Base):

@@ -1,10 +1,11 @@
 import twitter
 import sys
 import os
+import tokenizer
 
 ENV = os.environ
 
-class Client(boj):
+class Client(object):
 	def __init__(self):
 		self.client = twitter.Api(
 		    consumer_key=ENV['TWITTER_CONSUMER_KEY'],
@@ -40,8 +41,8 @@ class Client(boj):
 		profile_image_url = result['user']['profile_image_url']
 		timestamp = result['created_at']
 		return {
-			'post': post, 
-			'username': username, 
-			'profile_image_url': profile_image_url, 
+			'post': " ".join(tokenize(post)),
+			'username': username,
+			'profile_image_url': profile_image_url,
 			'timestamp': timestamp
 		}	

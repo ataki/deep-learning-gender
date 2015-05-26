@@ -4,6 +4,12 @@
 Tokenizer for Twitter-based text. Written by AmaÃ§ Herdagdelen 2011.The code is licensed under the Apache License 2.0: http://www.apache.org/licenses/LICENSE-2.0.html
 
 For emoticon and URL recognition, this code uses parts of TweetMotif (https://github.com/brendano/tweetmotif). TweetMotif is also licensed under the Apache License 2.0: http://www.apache.org/licenses/LICENSE-2.0.html
+
+Usage
+
+    txt = "RT @justinbieber: and that's for those that dont know...they've great records like this. #GREATMUSIC: http://www.youtube.com/watch?v=cF"
+
+    print " ".join(tokenize(txt))
 """
 # TODO: Deal with intensified emoticons like :))))?
 # TODO: Deal with Asian-style emoticons or westernized-Asian like (-_-) or (;_;) or (^_^)
@@ -14,8 +20,8 @@ For emoticon and URL recognition, this code uses parts of TweetMotif (https://gi
 
 import re
 import sys
-from aux import url
-from aux import emoticon
+from emoticon import url
+from emoticon import emoticon
 
 def unicode_compile(regexp):
     return re.compile(ur'%s' % regexp.decode("utf-8"), re.U|re.I)
@@ -113,7 +119,3 @@ def tokenize(content):
                                 tokens.append(y)
                                 debug_log(y)
     return [x.encode("utf8") for x in tokens]
-
-if __name__ == "__main__":
-    txt = "RT @justinbieber: and that's for those that dont know...they've great records like this. #GREATMUSIC: http://www.youtube.com/watch?v=cF"
-    print " ".join(tokenize(txt))
