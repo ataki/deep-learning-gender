@@ -36,7 +36,7 @@ def fetch_authors():
     if not os.path.isfile(authors_path):
         author_data = readmetadata()
         with open(authors_path, "w") as outfile:
-            data_as_arr = [x for x in author_data]
+            data_as_arr = [x for x in author_data.values()]
             outfile.write(json.dumps(data_as_arr))
     with open(authors_path) as infile:
         return json.loads(infile.read())
