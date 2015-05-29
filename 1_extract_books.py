@@ -35,8 +35,15 @@ def fetch_authors():
     authors_path = "data/authors.json"
     if not os.path.isfile(authors_path):
         author_data = readmetadata()
+        def transform(entry):
+            result = {}
+            result.update(entry)
+            for k in result.keys():
+                if type(k) == set:
+                    result[k] = list(result[k])
+            return result
         with open(authors_path, "w") as outfile:
-            data_as_arr = [x for x in author_data.values()]
+            data_as_arr = [transform(x) for x in author_data.values()]
             outfile.write(json.dumps(data_as_arr))
     with open(authors_path) as infile:
         return json.loads(infile.read())
