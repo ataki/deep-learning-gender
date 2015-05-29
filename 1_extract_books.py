@@ -35,7 +35,7 @@ def fetch_authors():
     authors_path = "data/authors.json"
     if not os.path.isfile(authors_path):
         author_data = readmetadata()
-        with open(author_data, "w") as outfile:
+        with open(authors_path, "w") as outfile:
             data_as_arr = [x for x in author_data]
             outfile.write(json.dumps(data_as_arr))
     with open(authors_path) as infile:
@@ -83,8 +83,8 @@ def extract_book_contents(metadata):
 #   dependencies, including that src_dir is
 #   a valid directory, and that the db exists
 #   for writing books into.
-#      
-#   Authors must be an iterable, src_dir a 
+#
+#   Authors must be an iterable, src_dir a
 #   path to a valid directory to write out to,
 #   and century an integer.
 def extract_subroutine(data, src_dir, century):
@@ -112,8 +112,8 @@ def extract_subroutine(data, src_dir, century):
         f.write(text)
         f.close()
         book = model.Book(
-            title=title, 
-            author=author, 
+            title=title,
+            author=author,
             e_id=e_id,
             century=century,
             text_file_path=text_file_path
