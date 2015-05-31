@@ -1,0 +1,144 @@
+#!/usr/local/bin/python
+from lib import model
+
+import os
+import json
+import time
+import requests
+import sys
+
+import StringIO
+import zipfile
+
+session = model.get_session()
+import logging
+
+# these two lines enable debugging at httplib level (requests->urllib3->httplib)
+# you will see the REQUEST, including HEADERS and DATA, and RESPONSE with HEADERS but without DATA.
+# the only thing missing will be the response.body which is not logged.
+import httplib
+httplib.HTTPConnection.debuglevel = 1
+
+logging.basicConfig() # you need to initialize logging, otherwise you will not see anything from requests
+logging.getLogger().setLevel(logging.DEBUG)
+requests_log = logging.getLogger("requests.packages.urllib3")
+requests_log.setLevel(logging.DEBUG)
+requests_log.propagate = True
+
+def dasherize(parts):
+    return "-".join(parts)
+
+def fetch_author_data():
+    with open("data/authors.json") as f:
+        return json.loads(f.read())
+
+def never_seen_book(md, century):
+    global session
+
+    e_id = md['id']
+    print 'eid ' + str(e_id)
+    result = session.query(model.Book).filter(model.Book.e_id == e_id).first()
+    return (result is None)
+
+def dedup_by_author(metadata):
+    seen = set()
+    result = []
+    for md in metadata:
+        author = md['author']
+        if author in seen:
+            pass
+        else:
+            seen.add(author)
+            result.append(md)
+    return result
+
+def ask_given_metadata(md, century):
+    global session
+
+    title = md['title']
+    author = md['author']
+    e_id = md['id']
+
+    formats = md.get('formats')
+    if formats is None:
+        return
+    url = formats.get('text/plain; charset=us-ascii')
+    if url is None:
+        return
+
+    century = century
+
+    if type(list) == list:
+        title = dasherize(title)
+
+    path = os.path.join("data", "books", str(century), str(e_id) + ".txt")
+
+    print "...loading author %s" % author
+    gender_input = raw_input("What's the gender of this author? Specify M/F: ")
+    if gender_input == "M":
+        gender = 1
+    elif gender_input == "F":
+        gender = -1
+    else:
+        gender = 0
+
+    print "url: %s" % url
+    print "Please save the file at {0}".format(path)
+
+    headers = {
+        'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.81 Safari/537.36",
+        'Cookie': 'bonus=id3315; session_id=405ff02aa048cb39556f536f6dc57aa232760880',
+        'Accept-Language': 'en-US,en;q=0.8',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, sdch'
+    }
+
+    res = requests.get(url, headers=headers)
+    if res.status_code != 200:
+        print "...bad fetch, continuing..."
+        return
+
+    if "zip" not in url:
+        f = open(path, "w")
+        f.write(res.text + "\n")
+        f.close()
+    else:
+        return
+        #raw_input("When you've finished downloading, hit any key: ")
+        #f = StringIO.StringIO()
+        #f.write(res.text)
+        #zf = zipfile.ZipFile(f)
+        #zf.extractall(path)
+        #zf.close()
+
+    book = model.Book(
+        title=title,
+        author=author,
+        e_id=e_id,
+        century=century,
+        author_gender=gender,
+        text_file_path=path
+    )
+    session.add(book)
+    session.commit()
+    print "...done!"
+
+
+if __name__ == "__main__":
+    all_author_data = fetch_author_data()
+
+    author_1800s = lambda x: 1800 <= x.get("authoryearofbirth", 0) <= 1900
+    author_1900s = lambda x: 1900 <  x.get("authoryearofbirth", 0)
+
+    metadata_1800 = dedup_by_author(filter(author_1800s, all_author_data))
+    metadata_1900 = dedup_by_author(filter(author_1900s, all_author_data))
+
+    #for md in metadata_1800:
+    #    if never_seen_book(md, 1800):
+    #        ask_given_metadata(md, 1800)
+
+    for md in metadata_1900[170:]:
+        if never_seen_book(md, 1900):
+            ask_given_metadata(md, 1900)

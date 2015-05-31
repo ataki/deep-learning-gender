@@ -12,7 +12,7 @@ Base = declarative_base()
 
 def init(dbpath):
 	global engine
-	engine = create_engine('sqlite:///' + dbpath, echo=True)
+	engine = create_engine('sqlite:///' + dbpath)
 
 def get_session():
 	global session, engine
@@ -71,7 +71,7 @@ class Book(Base):
 	title = Column(String)
 	e_id = Column(Integer)
 	century = Column(Integer)
-	text_file_path = Column(String)	
+	text_file_path = Column(String)
 	author_gender = Column(Integer, default=0)
 
 class TaskCompletion(Base):
