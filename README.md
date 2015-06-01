@@ -1,9 +1,15 @@
+# blog-gender-dataset
+
+Maintains dataset generation procedure for our deep-learning project.
+
+Author: Jim Zheng, Aric Bartle
+
 # Reduced Vocab
 
-- download frequency data
-- prune data to get top N%
-- output (word-vec => word mapping)
-- wordvector.txt, vocab.txt, vocab.pdb
+- [x] download frequency data
+- [x] prune data to get top N%
+- [x] output (word-vec => word mapping)
+- [x] wordvector.txt, vocab.txt, vocab.pdb
 
 # Blog Cleanup
 
